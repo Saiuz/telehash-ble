@@ -9,11 +9,13 @@ util.inherits(Backend, EventEmitter);
 
 module.exports = Backend;
 
+Backend.prototype.type = 'BaseBackend'
+
 /** Scan for remote devices.
  * @param {function} callback - callback(err)
  */
 Backend.prototype.startDiscovery = function (callback) {
-  throw new Error('Not implemented: backend.startDiscovery');
+  this._notImplemented('startDiscovery');
 }
 
 
@@ -21,7 +23,7 @@ Backend.prototype.startDiscovery = function (callback) {
  * @param {function} callback - callback(err)
  */
 Backend.prototype.stopDiscovery = function (callback) {
-  throw new Error('Not implemented: backend.startDiscovery');
+  this._notImplemented('stopDiscovery');
 }
 
 
@@ -42,9 +44,77 @@ Backend.prototype.stopDiscovery = function (callback) {
    );
  */
 Backend.prototype.connect = function (deviceAddress, options, callback) {
-  throw new Error('Not implemented: backend.connect');
+  this._notImplemented('connect');
 }
 
+
+Backend.prototype.getService = function (serviceId, callback) {
+  this._notImplemented('getService');
+}
+
+Backend.prototype.getServices = function (deviceAddress, callback) {
+  this._notImplemented('getServices');
+}
+
+Backend.prototype.getCharacteristic = function (characteristicId, callback) {
+  this._notImplemented('getCharacteristic');
+}
+
+Backend.prototype.getCharacteristics = function (serviceId, callback) {
+  this._notImplemented('getCharacteristics');
+}
+
+Backend.prototype.getIncludedServices = function (serviceId, callback) {
+  this._notImplemented('getIncludedServices');
+}
+
+Backend.prototype.getDescriptor = function (descriptorId, callback) {
+  this._notImplemented('getDescriptor');
+}
+
+Backend.prototype.getDescriptors = function (characteristicId, callback) {
+  this._notImplemented('getDescriptors');
+}
+
+Backend.prototype.readCharacteristicValue = function (characteristicId, callback) {
+  this._notImplemented('readCharacteristicValue');
+}
+
+Backend.prototype.writeCharacteristicValue = function (characteristicId, value, callback) {
+  this._notImplemented('writeCharacteristicValue');
+}
+
+Backend.prototype.readDescriptorValue = function (characteristicId, callback) {
+  this._notImplemented('readDescriptorValue');
+}
+
+Backend.prototype.writeDescriptorValue = function (characteristicId, value, callback) {
+  this._notImplemented('writeDescriptorValue');
+}
+
+Backend.prototype.startCharacteristicNotifications = function (characteristicId, properties, callback) {
+  this._notImplemented('startCharacteristicNotifications');
+}
+
+Backend.prototype.stopCharacteristicNotifications = function (characteristicId, callback) {
+  this._notImplemented('stopCharacteristicNotifications');
+}
+
+Backend.prototype.reset = function (callback) {
+  this._notImplemented('reset');
+}
+
+Backend.prototype._notImplemented = function (fnName) {
+  var args;
+
+  try {
+    args = this[fnName].toString().match(/function\s*(\([^\)]*\))/)[1];
+  } catch (e) {
+    args = '(...)';
+  }
+
+  throw new Error('Not implemented: ' + this.type + '.' + fnName + args);
+}
 
 //connect − chrome.bluetoothLowEnergy.connect(string deviceAddress, object properties, function callback)
 //disconnect − chrome.bluetoothLowEnergy.disconnect(string deviceAddress, function callback)

@@ -7,13 +7,42 @@ if (!ble) {
   throw new Error('The telehash-ble evothings backend requires window.evothings to exist');
 }
 
+/*
+ * service:
+ *
+ * {
+ *   uuid:          '<string> - uuid from device',
+ *   instanceId:    '<string> - id to use elsewhere',
+ *   isPrimary:     '<bool>   - primary or secondary service',
+ *   deviceAddress: '<string> - address of peripheral',
+ *   _raw:          '<object> - the raw object from evothings',
+ * }
+ */
+
 function EvothingsBackend() {
   Backend.call(this);
 
   this._devicesByAddress = {};
+  this._connectStatuses = {};
+  this._servicesById = {};
+  this._characteristicsById = {};
+
+  this.on('deviceAdded', function (device) {
+    this._devicesByAddress[device.address] = device;
+  });
+
+  this.on('serviceAdded', function (service) {
+    this._servicesById[service.instanceId] = service;
+  });
+
+  this.on('characteristicAdded', function (characteristic) {
+    this._characteristicsById[characteristic.instanceId] = characteristic;
+  });
 }
 
 util.inherits(EvothingsBackend, Backend);
+
+EvothingsBackend.prototype.type = 'EvothingsBackend'
 
 EvothingsBackend.prototype.startDiscovery = function (callback) {
   var self = this;
@@ -26,11 +55,16 @@ EvothingsBackend.prototype.startDiscovery = function (callback) {
   };
 
   ble.startScan(
-    function (device) {
+    function (_device) {
       if (!hasCalledCallback) {
         hasCalledCallback = true;
         onSuccess();
       }
+
+      var device = {
+        address: _device.address,
+        _raw: _device,
+      };
 
       self._devicesByAddress[device.address] = device;
       self.emit('deviceAdded', device);
@@ -50,9 +84,26 @@ EvothingsBackend.prototype.stopDiscovery = function (callback) {
 };
 
 EvothingsBackend.prototype.connect = function (deviceAddress, options, callback) {
+  var self = this;
+
   ble.connect(deviceAddress,
     function (info) {
-      callback(null, info);
+      console.log(info);
+      switch (ble.connectionState[info.state]) {
+        case 'STATE_DISCONNECTED':
+          delete self._connectStatuses[deviceAddress]
+          break;
+        case 'STATE_CONNECTING':
+          self._connectStatuses[deviceAddress] = info;
+          break;
+        case 'STATE_CONNECTED':
+          self._connectStatuses[deviceAddress] = info;
+          return callback(null, info);
+          break;
+        case 'STATE_DISCONNECTING':
+          self._connectStatuses[deviceAddress] = info;
+          break;
+      }
     },
     function (err) {
       callback(new Error('Evothings error code: ' + err));
@@ -60,5 +111,129 @@ EvothingsBackend.prototype.connect = function (deviceAddress, options, callback)
   );
 };
 
+EvothingsBackend.prototype.getServices = function (deviceAddress, callback) {
+  var self = this;
+  var connectStatus = this._connectStatuses[deviceAddress];
+  var deviceHandle = connectStatus && connectStatus.deviceHandle;
+
+  if (!connectStatus || connectStatus.state !== 2 || !deviceHandle) {
+    return callback(new Error('Must be connected to call getServices, call .connect(address, options, cb) first'));
+  }
+
+  ble.services(deviceHandle,
+    function (_services) {
+      var services = _services.map(function (raw) {
+        return {
+          uuid: raw.uuid,
+          instanceId: raw.handle,
+          isPrimary: evothings.ble.serviceType[raw.serviceType] === 'SERVICE_TYPE_PRIMARY',
+          deviceAddress: deviceAddress,
+          _raw: raw
+        };
+      });
+
+      services.forEach(function (service) {
+        self.emit('serviceAdded', service)
+      });
+
+      callback(null, services);
+    },
+    function (err) {
+      callback(new Error('Evothings error code: ' + err));
+    }
+  );
+};
+
+EvothingsBackend.prototype.reset = function (callback) {
+  ble.reset(
+    function () { callback(); },
+    function (err) {
+      callback(new Error('Evothings error code: ' + err));
+    }
+  );
+};
+
+EvothingsBackend.prototype.getCharacteristics = function (serviceId, callback) {
+  var self = this;
+  var service = this._servicesById[serviceId];
+
+  if (!service) {
+    throw new Error('Unknown service with serviceId: ' + serviceId);
+  }
+
+  this._getDeviceHandle(service.deviceAddress, function (err, deviceHandle) {
+    if (err) {
+      return callback(err);
+    }
+
+    console.log('Connecting to device/service', deviceHandle, serviceId);
+
+    ble.characteristics(
+      deviceHandle,
+      service.instanceId,
+      function (_characteristics) {
+        var characteristics = _characteristics.map(function (raw) {
+          return {
+            uuid: raw.uuid,
+            instanceId: raw.handle,
+            service: service,
+            _raw: raw
+          };
+        });
+
+        characteristics.forEach(function (char) {
+          self.emit('characteristicAdded', char);
+        });
+
+        callback(null, characteristics);
+      },
+      function (err) {
+        callback(new Error('Evothings error code: ' + err));
+      }
+    );
+  });
+};
+
+EvothingsBackend.prototype.readCharacteristicValue = function (characteristicId, callback) {
+  var self = this;
+  var characteristic = this._characteristicsById[characteristicId];
+
+  if (!characteristic) {
+    throw new Error('Unknown characteristic with characteristicId: ' + characteristicId);
+  }
+
+  this._getDeviceHandle(characteristic.service.deviceAddress, function (err, deviceHandle) {
+    if (err) {
+      return callback(err);
+    }
+
+    ble.readCharacteristic(
+      deviceHandle,
+      characteristic.instanceId,
+      function (value) {
+        callback(null, value);
+      },
+      function (err) {
+        callback(new Error('Evothings error code: ' + err));
+      }
+    );
+  });
+};
+
+EvothingsBackend.prototype._getDeviceHandle = function (deviceAddress, callback) {
+  var device = this._devicesByAddress[deviceAddress];
+  var connectStats = this._connectStatuses[deviceAddress];
+
+  if (!device) {
+    return callback(new Error('Unknown device: ' + deviceAddress));
+  }
+
+  if (!connectStats || connectStats.state !== 2 || !connectStats.deviceHandle) {
+    return callback(new Error('Not connected to device: ' + deviceAddress));
+  }
+
+  return callback(null, connectStats.deviceHandle);
+};
 
 module.exports = new EvothingsBackend();
+window.EvothingsBackend = module.exports;
