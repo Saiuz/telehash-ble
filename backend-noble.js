@@ -137,6 +137,7 @@ NobleBackend.prototype.getCharacteristics = function (serviceId, callback) {
 };
 
 NobleBackend.prototype.readCharacteristicValue = function (characteristicId, callback) {
+  console.log(Object.keys(this._characteristicsById), characteristicId);
   var characteristic = this._characteristicsById[characteristicId];
 
   if (!characteristic) {
@@ -144,6 +145,17 @@ NobleBackend.prototype.readCharacteristicValue = function (characteristicId, cal
   }
 
   characteristic._raw.read(callback);
+};
+
+NobleBackend.prototype.writeCharacteristicValue = function (characteristicId, buffer, callback) {
+  var characteristic = this._characteristicsById[characteristicId];
+
+  if (!characteristic) {
+    return callback(new Error('Unknown characteristic with id: ' + characteristicId));
+  }
+
+  console.log('char', characteristic._raw);
+  characteristic._raw.write(buffer, false, callback);
 };
 
 NobleBackend.prototype.reset = function (callback) {

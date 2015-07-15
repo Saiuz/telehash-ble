@@ -93,11 +93,47 @@ module.exports = function (backend) {
             });
           });
         });
+      });
 
+      it('reads and writes a service characteristic value', function (done) {
+        backend.getServices(connectedDevice, function (err, services) {
+          assert.ifError(err);
 
-        backend.once('serviceAdded', function (service) {
-          assert(service);
+          var testService = services.filter(function (s) {
+            return parseInt(s.uuid.split('-'), 16) === 0x1666;
+          })[0];
 
+          assert(testService, 'Expected service with id 0x1666');
+
+          backend.getCharacteristics(testService.instanceId, function (err, characteristics) {
+            assert.ifError(err);
+
+            var testCharacteristic = characteristics.filter(function (c) {
+              return parseInt(c.uuid.split('-'), 16) === 0x2777;
+            })[0];
+
+            var testValue = Math.floor(Math.random() * 100);
+            var testBuffer;
+
+            if (typeof Buffer === 'undefined') {
+              testBuffer = new ArrayBuffer([ testValue ]);
+            } else {
+              testBuffer = new Buffer([ testValue ]);
+            }
+
+            console.log('Writing value ' + testValue + '/' + new Int8Array(testBuffer)[0]);
+            backend.writeCharacteristicValue(testCharacteristic.instanceId, testBuffer, function (err) {
+              assert.ifError(err);
+
+              backend.readCharacteristicValue(testCharacteristic.instanceId, function (err, resultBuffer) {
+                assert.ifError(err);
+
+                assert.equal(testValue, new Int8Array(resultBuffer)[0]);
+
+                done();
+              });
+            });
+          });
         });
       });
     });

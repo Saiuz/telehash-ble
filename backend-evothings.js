@@ -195,7 +195,6 @@ EvothingsBackend.prototype.getCharacteristics = function (serviceId, callback) {
 };
 
 EvothingsBackend.prototype.readCharacteristicValue = function (characteristicId, callback) {
-  var self = this;
   var characteristic = this._characteristicsById[characteristicId];
 
   if (!characteristic) {
@@ -212,6 +211,32 @@ EvothingsBackend.prototype.readCharacteristicValue = function (characteristicId,
       characteristic.instanceId,
       function (value) {
         callback(null, value);
+      },
+      function (err) {
+        callback(new Error('Evothings error code: ' + err));
+      }
+    );
+  });
+};
+
+EvothingsBackend.prototype.writeCharacteristicValue = function (characteristicId, data, callback) {
+  var characteristic = this._characteristicsById[characteristicId];
+
+  if (!characteristic) {
+    throw new Error('Unknown characteristic with characteristicId: ' + characteristicId);
+  }
+
+  this._getDeviceHandle(characteristic.service.deviceAddress, function (err, deviceHandle) {
+    if (err) {
+      return callback(err);
+    }
+
+    ble.writeCharacteristic(
+      deviceHandle,
+      characteristic.instanceId,
+      data,
+      function () {
+        callback();
       },
       function (err) {
         callback(new Error('Evothings error code: ' + err));
