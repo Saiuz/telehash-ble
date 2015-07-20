@@ -190,4 +190,12 @@ NobleBackend.prototype.reset = function (callback) {
   disconnectNext();
 };
 
-module.exports = new NobleBackend();
+// Export a singleton
+var backend;
+module.exports = function () {
+  if (backend) {
+    return backend;
+  }
+
+  return new NobleBackend();
+}

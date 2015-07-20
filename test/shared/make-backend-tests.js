@@ -1,6 +1,8 @@
 var assert = require('assert');
 
-module.exports = function (backend) {
+module.exports = function (Backend) {
+  var backend = new Backend();
+
   describe('Backend', function () {
     this.timeout(10000);
 

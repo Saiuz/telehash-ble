@@ -26,4 +26,12 @@ ChromeBackend.prototype.connect = function (deviceAddress, options, callback) {
 };
 
 
-module.exports = new ChromeBackend();
+// Export a singleton
+var backend;
+module.exports = function () {
+  if (backend) {
+    return backend;
+  }
+
+  return new ChromeBackend();
+}

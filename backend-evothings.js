@@ -1,12 +1,6 @@
 var Backend = require('./backend');
 var util = require('util');
 
-var ble = window.evothings && window.evothings.ble;
-
-if (!ble) {
-  throw new Error('The telehash-ble evothings backend requires window.evothings to exist');
-}
-
 /*
  * service:
  *
@@ -20,6 +14,12 @@ if (!ble) {
  */
 
 function EvothingsBackend() {
+  this.ble = window.evothings && window.evothings.ble;
+
+  if (!this.ble) {
+    throw new Error('The telehash-ble evothings backend requires window.evothings to exist');
+  }
+
   Backend.call(this);
 
   this._devicesByAddress = {};
@@ -54,7 +54,7 @@ EvothingsBackend.prototype.startDiscovery = function (callback) {
     }
   };
 
-  ble.startScan(
+  this.ble.startScan(
     function (_device) {
       if (!hasCalledCallback) {
         hasCalledCallback = true;
@@ -79,17 +79,17 @@ EvothingsBackend.prototype.startDiscovery = function (callback) {
 };
 
 EvothingsBackend.prototype.stopDiscovery = function (callback) {
-  ble.stopScan();
+  this.ble.stopScan();
   process.nextTick(callback);
 };
 
 EvothingsBackend.prototype.connect = function (deviceAddress, options, callback) {
   var self = this;
 
-  ble.connect(deviceAddress,
+  this.ble.connect(deviceAddress,
     function (info) {
       console.log(info);
-      switch (ble.connectionState[info.state]) {
+      switch (self.ble.connectionState[info.state]) {
         case 'STATE_DISCONNECTED':
           delete self._connectStatuses[deviceAddress]
           break;
@@ -120,13 +120,13 @@ EvothingsBackend.prototype.getServices = function (deviceAddress, callback) {
     return callback(new Error('Must be connected to call getServices, call .connect(address, options, cb) first'));
   }
 
-  ble.services(deviceHandle,
+  this.ble.services(deviceHandle,
     function (_services) {
       var services = _services.map(function (raw) {
         return {
           uuid: raw.uuid,
           instanceId: raw.handle,
-          isPrimary: evothings.ble.serviceType[raw.serviceType] === 'SERVICE_TYPE_PRIMARY',
+          isPrimary: self.ble.serviceType[raw.serviceType] === 'SERVICE_TYPE_PRIMARY',
           deviceAddress: deviceAddress,
           _raw: raw
         };
@@ -145,7 +145,7 @@ EvothingsBackend.prototype.getServices = function (deviceAddress, callback) {
 };
 
 EvothingsBackend.prototype.reset = function (callback) {
-  ble.reset(
+  this.ble.reset(
     function () { callback(); },
     function (err) {
       callback(new Error('Evothings error code: ' + err));
@@ -168,7 +168,7 @@ EvothingsBackend.prototype.getCharacteristics = function (serviceId, callback) {
 
     console.log('Connecting to device/service', deviceHandle, serviceId);
 
-    ble.characteristics(
+    self.ble.characteristics(
       deviceHandle,
       service.instanceId,
       function (_characteristics) {
@@ -195,6 +195,7 @@ EvothingsBackend.prototype.getCharacteristics = function (serviceId, callback) {
 };
 
 EvothingsBackend.prototype.readCharacteristicValue = function (characteristicId, callback) {
+  var self = this;
   var characteristic = this._characteristicsById[characteristicId];
 
   if (!characteristic) {
@@ -206,7 +207,7 @@ EvothingsBackend.prototype.readCharacteristicValue = function (characteristicId,
       return callback(err);
     }
 
-    ble.readCharacteristic(
+    self.ble.readCharacteristic(
       deviceHandle,
       characteristic.instanceId,
       function (value) {
@@ -220,6 +221,7 @@ EvothingsBackend.prototype.readCharacteristicValue = function (characteristicId,
 };
 
 EvothingsBackend.prototype.writeCharacteristicValue = function (characteristicId, data, callback) {
+  var self = this;
   var characteristic = this._characteristicsById[characteristicId];
 
   if (!characteristic) {
@@ -231,7 +233,7 @@ EvothingsBackend.prototype.writeCharacteristicValue = function (characteristicId
       return callback(err);
     }
 
-    ble.writeCharacteristic(
+    self.ble.writeCharacteristic(
       deviceHandle,
       characteristic.instanceId,
       data,
@@ -260,5 +262,12 @@ EvothingsBackend.prototype._getDeviceHandle = function (deviceAddress, callback)
   return callback(null, connectStats.deviceHandle);
 };
 
-module.exports = new EvothingsBackend();
-window.EvothingsBackend = module.exports;
+// Export a singleton
+var backend;
+module.exports = function () {
+  if (backend) {
+    return backend;
+  }
+
+  return new EvothingsBackend();
+}
