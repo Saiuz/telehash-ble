@@ -11,13 +11,18 @@
     "test-ios": "cd test/cordova/test-cordova-app && cordova prepare && cordova run ios --device",
     "test-android": "cd test/cordova/test-cordova-app && cordova prepare && cordova run android --device"
   },
-  "author": "",
+  "author": "Filament",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/getfilament/telehash-ble.git"
+  },
   "license": "ISC",
   "dependencies": {
-    "browserify": "^10.2.6",
+    "lob-enc":"git+https://github.com/quartzjer/lob-enc.git",
     "mocha": "^2.2.5"
   },
   "devDependencies": {
+    "browserify": "^10.2.6",
     "beefy": "^2.1.5",
     "bleno": "^0.1.14",
     "browserify-css": "^0.6.1",

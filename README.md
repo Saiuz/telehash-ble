@@ -2,6 +2,16 @@
 
 BLE transport for telehash
 
+## Usage
+
+By default the transport doesn't activate as BLE is typically controlled through explicit actions.
+
+Calling `mesh.scan({args})` will start scanning for other endpoints in the mesh that are beaconing and will automatically link with them over BLE if any are discovered.
+
+In order to beacon, the `mesh.beacon({args})` must be called.  Not all hardware can support doing both at the same time.
+
+The args may be `false` to disable or `{uuid:'...',name:'...'}` to set the custom uuid/name advertised/detected.
+
 ## Backends
 
 Backends should be implemented to conform to the interface defined in ./backend.js, which is roughly based on the chrome app bluetooth/bluetoothLowEnergy apis.
