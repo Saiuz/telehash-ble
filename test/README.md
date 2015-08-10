@@ -60,7 +60,7 @@ The cordova tests are a little more complicated as it has to run in a real app. 
 * Do this once:
     1. Ensure you have android studio and/or xcode installed
     2. `npm install` if you haven't already
-    3. `cordova-init` to setup the cordova project
+    3. `npm run cordova-init` to setup the cordova project
 * Make sure these are running in different terminals before you run the tests
     1. `npm run start-dummy-peripheral` - starts a node server on your mac to test against
     2. `npm run start-cordova-test-server` - starts compiling test files and serving them (reloads automatically)
