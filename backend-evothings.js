@@ -66,8 +66,16 @@ EvothingsBackend.prototype.startDiscovery = function (callback) {
         _raw: _device,
       };
 
+      var emit = false;
+      if (!self._devicesByAddress[device.address]) {
+        emit = true;
+      }
+
       self._devicesByAddress[device.address] = device;
-      self.emit('deviceAdded', device);
+
+      if (emit) {
+        self.emit('deviceAdded', device);
+      }
     },
     function (errorCode) {
       hasCalledCallback = true;
@@ -109,6 +117,19 @@ EvothingsBackend.prototype.connect = function (deviceAddress, options, callback)
       callback(new Error('Evothings error code: ' + err));
     }
   );
+};
+
+EvothingsBackend.prototype.disconnect = function (deviceAddress, callback) {
+  var self = this;
+
+  this._getDeviceHandle(service.deviceAddress, function (err, deviceHandle) {
+    if (err) {
+      return callback(err);
+    }
+    
+    self.ble.close(deviceHandle);
+    callback();
+  });
 };
 
 EvothingsBackend.prototype.getServices = function (deviceAddress, callback) {
@@ -166,7 +187,7 @@ EvothingsBackend.prototype.getCharacteristics = function (serviceId, callback) {
       return callback(err);
     }
 
-    console.log('Connecting to device/service', deviceHandle, serviceId);
+    console.log('Get characteristics for ', deviceHandle, serviceId);
 
     self.ble.characteristics(
       deviceHandle,
@@ -185,9 +206,11 @@ EvothingsBackend.prototype.getCharacteristics = function (serviceId, callback) {
           self.emit('characteristicAdded', char);
         });
 
+        console.log('Got', characteristics);
         callback(null, characteristics);
       },
       function (err) {
+        console.log('Char error');
         callback(new Error('Evothings error code: ' + err));
       }
     );

@@ -19,8 +19,9 @@
   },
   "license": "ISC",
   "dependencies": {
-    "lob-enc":"git+https://github.com/quartzjer/lob-enc.git",
-    "mocha": "^2.2.5"
+    "lob-enc": "git+https://github.com/quartzjer/lob-enc.git",
+    "mocha": "^2.2.5",
+    "telehash": "^0.3.31"
   },
   "devDependencies": {
     "browserify": "^10.2.6",
