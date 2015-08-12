@@ -1,7 +1,8 @@
 var bleno = require('bleno');
 var DummyService = require('./dummy-service');
+var StreamService = require('./stream-service');
 
-var primaryService = new DummyService();
+var primaryService = new StreamService();
 
 //console.log(bleno);
 //console.log(primaryService);
@@ -10,7 +11,7 @@ bleno.on('stateChange', function(state) {
   console.log('Bluetooth adapter is: ' + state);
 
   if (state === 'poweredOn') {
-    console.log('DummyService uuid: ' + primaryService.uuid);
+    console.log('StreamService uuid: ' + primaryService.uuid);
     bleno.startAdvertising('Dummy', [primaryService.uuid]);
   } else {
     bleno.stopAdvertising();

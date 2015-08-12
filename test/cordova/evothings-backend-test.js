@@ -1,3 +1,5 @@
 var makeBackendTests = require('../shared/make-backend-tests');
+var makeStreamTests = require('../shared/make-stream-tests');
 
-makeBackendTests(require('../../backend-evothings'));
+makeStreamTests(require('../../backend-evothings'))
+//makeBackendTests(require('../../backend-evothings'));
