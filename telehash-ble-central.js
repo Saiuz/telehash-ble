@@ -58,15 +58,14 @@ module.exports = function (backend) {
         mesh.receive(packet, pipe);
       });
 
-      var blocked = false;
       var characteristicId = null;
       var send = function (data, done) {
-        if (blocked) {
-          console.log('Error: blocked');
-          return done(new Error('Sending blocked'));
-        }
+        //if (blocked) {
+        //  console.log('Error: blocked');
+        //  return done(new Error('Sending blocked'));
+        //}
 
-        blocked = true;
+        //blocked = true;
 
         var onComplete = function () {
           blocked = false;
@@ -103,9 +102,8 @@ module.exports = function (backend) {
           if (!err && value) {
             chunk.write(new Buffer(value));
           }
-          console.log('Read', err, value);
 
-          setTimeout(readPipe, 500);
+          setTimeout(readPipe, 20);
         });
       };
 
@@ -184,6 +182,7 @@ module.exports = function (backend) {
                   }
                 });
               }
+              window.doPing();
             });
 
           }
