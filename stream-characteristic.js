@@ -5,7 +5,7 @@ var lob = require('lob-enc');
 var Descriptor = bleno.Descriptor;
 var Characteristic = bleno.Characteristic;
 
-var CHUNK_SIZE = 5;
+var CHUNK_SIZE = 20;
 
 var StreamCharacteristic = function() {
   console.log('Configure stream characteristic');
@@ -34,6 +34,7 @@ util.inherits(StreamCharacteristic, Characteristic);
 
 StreamCharacteristic.prototype.send = function (value, callback) {
   var data = lob.encode(value);
+  console.log('Try send data', value);
   this.chunked.send(data);
 };
 
@@ -44,6 +45,8 @@ StreamCharacteristic.prototype.onReadRequest = function(offset, callback) {
 
   if (data) {
     console.log('Replying with buffer: ', data.byteLength);
+  } else {
+    console.log('No data');
   }
 
   callback(this.RESULT_SUCCESS, data);

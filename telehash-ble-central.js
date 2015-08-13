@@ -1,5 +1,5 @@
-var uuid = '42424242424242424242424242424242';
-var CHUNK_SIZE = 5;
+var CHUNK_SIZE = 20;
+var TELEHASH_UUID = '42424242424242424242424242424242';
 var lob = require('lob-enc');
 
 module.exports = function (backend) {
@@ -41,6 +41,10 @@ module.exports = function (backend) {
         if (err) {
           return console.log('Error on receive ' + err);
         }
+        console.log('Receive');
+        console.log(packet);
+        console.log(packet.json);
+        console.log(packet.body);
         mesh.receive(packet, pipe);
       });
 
@@ -64,6 +68,7 @@ module.exports = function (backend) {
           if (!val) {
             onComplete();
           } else {
+            console.log('Write value');
             backend.writeCharacteristicValue(characteristicId, val, function (err) {
               if (err) {
                 console.log('Write error ' + err);
@@ -78,11 +83,26 @@ module.exports = function (backend) {
         queueSend();
       };
 
+      var readPipe = function () {
+        backend.readCharacteristicValue(characteristicId, function (err, value) {
+          if (err) {
+            console.log('Error reading pipe ' + err);
+          }
+
+          if (!err && value) {
+            chunk.write(new Buffer(value));
+          }
+
+          setTimeout(readPipe, 500);
+        });
+      };
+
       pipe.onSend = function (packet, link, done) {
         console.log('Send packet');
         send(packet, done);
       };
 
+      console.log('Finding characteristics');
       backend.getCharacteristics(path.service, function (err, characteristics) {
         if (err) {
           console.log('Error finding characteristic');
@@ -102,6 +122,7 @@ module.exports = function (backend) {
 
         characteristicId = testCharacteristic.instanceId;
         console.log('Returning pipe', pipe);
+        setTimeout(readPipe, 500);
         return done(pipe);
       });
     }
@@ -118,9 +139,11 @@ module.exports = function (backend) {
           }
 
           var telehashService = services.filter(function (s) {
-            return s.uuid = uuid;
+            console.log('UUIDs ' + s.uuid + ' ' + TELEHASH_UUID);
+            return s.uuid.replace(/-/g, '') === TELEHASH_UUID;
           })[0];
 
+          console.log('telehashService:');
           console.log(telehashService);
 
           if (!telehashService) {
@@ -160,9 +183,6 @@ module.exports = function (backend) {
 
     return done(null, tp);
   };
-
-  
-
 
   return ext;
 };
