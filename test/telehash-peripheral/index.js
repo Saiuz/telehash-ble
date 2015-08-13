@@ -1,5 +1,6 @@
 var telehash = require('telehash');
 var telehashBle = require('../../telehash-ble-peripheral');
+var fs = require('fs');
 
 delete telehash.extensions.udp4
 delete telehash.extensions.http
@@ -19,8 +20,9 @@ telehash.generate(function (err, endpoint) {
     }
 
     console.log(mesh.json());
+    fs.writeFileSync(__dirname + '/../../peripheral.json', JSON.stringify(mesh.json()));
     mesh.accept = function (from) {
-      console.log('Accepting telehash mesh');
+      console.log('Accepting link request');
       console.log(from);
       return mesh.link(from);
     }

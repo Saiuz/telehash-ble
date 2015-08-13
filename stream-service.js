@@ -14,12 +14,16 @@ function StreamService() {
       this.streamCharacteristic
     ]
   });
+
+  this.streamCharacteristic.on('telehash:packet', function (packet) {
+    this.emit('telehash:packet', packet);
+  }.bind(this));
 }
 
 util.inherits(StreamService, BlenoPrimaryService);
 
-StreamService.prototype.send = function (value) {
-  this.streamCharacteristic.send(value);
+StreamService.prototype.send = function (value, done) {
+  this.streamCharacteristic.send(value, done);
 }
 
 module.exports = StreamService;

@@ -25,22 +25,32 @@ module.exports = function (backend) {
         return false;
       }
 
+      if (link.blePipe) {
+        return link.blePipe;
+      }
+
       console.log('Creating pipe');
+      console.log(link, path);
       var id = path.address;
       if (tp.pipes[id]) {
         return done(tp.pipes[id]);
+      } else {
+        console.log('No pipe with id ' + id + 'so creating');
+        console.log(tp.pipes);
       }
 
       var pipe = new telehash.Pipe('ble', ext.keepalive);
+      link.blePipe = pipe;
       pipe.id = id;
       pipe.path = path;
 
       tp.pipes[id] = pipe;
 
-      var chunk = lob.chunking({ size: CHUNK_SIZE }, function (err, packet) {
+      var chunk = lob.chunking({ size: CHUNK_SIZE }, function (err, msg) {
         if (err) {
           return console.log('Error on receive ' + err);
         }
+        var packet = lob.decode(msg);
         console.log('Receive');
         console.log(packet);
         console.log(packet.json);
@@ -60,7 +70,7 @@ module.exports = function (backend) {
 
         var onComplete = function () {
           blocked = false;
-          done.call(null, arguments);
+          done.apply(null, arguments);
         };
 
         var queueSend = function queueSend() {
@@ -72,6 +82,7 @@ module.exports = function (backend) {
             backend.writeCharacteristicValue(characteristicId, val, function (err) {
               if (err) {
                 console.log('Write error ' + err);
+
                 return onComplete(err);
               }
               setTimeout(queueSend, 10);
@@ -92,6 +103,7 @@ module.exports = function (backend) {
           if (!err && value) {
             chunk.write(new Buffer(value));
           }
+          console.log('Read', err, value);
 
           setTimeout(readPipe, 500);
         });
@@ -151,17 +163,27 @@ module.exports = function (backend) {
             backend.close(device.address);
           } else {
             console.log('Creating link to ' + device.address);
-            mesh.link({
-              paths: [
-                {type: 'ble', address: device.address, service: telehashService.instanceId }
-              ],
-              keys: { '1a': 'ajwscb2bfdyghu5cn4yojc3jy2u43rgoyq', '2a': 'gcbacirqbudaskugjcdpodibaeaqkaadqiaq6abqqiaquaucaeaqbrl5xh5gfzijlrfh4pa23ym76xh6yb2aqkjcwofgxyyrv3zhnymwxl3ihpsjjdwqp2w42afddjdxv4z464kb6d5thg5m3qanoy4cekk42byjmu6256mmb5hol6eawx5dz6murfjgxrm6n7hrvpeadjjii2gqv4uixnyswfu2lrwzwflbcl7scz563njoj24bxquxu5fun6hbedgie7scdcsxiteelz2xmdr7sah774zb6tslzu3lfj6luyfnham7cvbjh5iij5pegi2hrpq65cp5kdwnw3nyk424g2cuhcbni26yo6zgokpexdmeagxwdgfzofd6kvqgicngknec4gpw4vvzyq62iz7ueco76uogtqml72hw5sxgnt4orfz2wdtg6xchi6n7rms7t5ouxptjhhicamaqaai', '3a': 'g32lt64o5syou2bacxgajzwdzfnpp7vhf2op5tsbk6ywo57pzeaq' },
-            }, function (err, link) {
+            var link = require('./peripheral.json');
+            link.paths[0].address = device.address;
+            link.paths[0].service = telehashService.instanceId;
+            mesh.link(link, function (err, link) {
               if (err) {
                 return console.log('Err linking to ' + device.address + ' ' + err);
               }
               console.log('Linked to ' + device.address + '!');
               console.log(link);
+              console.log('And, end');
+              console.log('Pinging link');
+
+              window.doPing = function () {
+                link.ping(function (err, ping) {
+                  if (err) {
+                    console.log('Error pingling', err);
+                  } else {
+                    console.log('LATENCY: ' + ping);
+                  }
+                });
+              }
             });
 
           }

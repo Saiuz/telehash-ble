@@ -1,3 +1,5 @@
+localStorage.debug = '*';
+
 module.exports = function (Backend) {
   var telehash = require('telehash');
   var telehashBleCentral = require('../../telehash-ble-central');

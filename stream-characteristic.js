@@ -22,10 +22,7 @@ var StreamCharacteristic = function() {
   });
 
   this.chunked = lob.chunking({ size: CHUNK_SIZE }, function (err, packet) {
-    this.emit('packet', packet);
-    if (packet.json) {
-      this.emit('packet:json', packet.json);
-    }
+    this.emit('telehash:packet', packet);
   }.bind(this));
 };
 
@@ -36,24 +33,19 @@ StreamCharacteristic.prototype.send = function (value, callback) {
   var data = lob.encode(value);
   console.log('Try send data', value);
   this.chunked.send(data);
+  callback();
 };
 
 StreamCharacteristic.prototype.onReadRequest = function(offset, callback) {
-  console.log('Got read request');
+  //console.log('Got read request');
 
   var data = this.chunked.read(CHUNK_SIZE) || this.chunked.read();
-
-  if (data) {
-    console.log('Replying with buffer: ', data.byteLength);
-  } else {
-    console.log('No data');
-  }
 
   callback(this.RESULT_SUCCESS, data);
 };
 
 StreamCharacteristic.prototype.onWriteRequest = function (data, offset, withoutResponse, done) {
-  console.log('Got write request');
+  //console.log('Got write request');
   this.chunked.write(data);
   done();
 };
