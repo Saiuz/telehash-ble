@@ -19,6 +19,8 @@
   },
   "license": "ISC",
   "dependencies": {
+    "chacha20": "^0.1.2",
+    "hashname": "^0.3.1",
     "lob-enc": "git+https://github.com/quartzjer/lob-enc.git",
     "mocha": "^2.2.5",
     "telehash": "^0.3.31"
