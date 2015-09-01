@@ -154,7 +154,6 @@ NobleBackend.prototype.writeCharacteristicValue = function (characteristicId, bu
     return callback(new Error('Unknown characteristic with id: ' + characteristicId));
   }
 
-  console.log('char', characteristic._raw);
   characteristic._raw.write(buffer, false, callback);
 };
 
