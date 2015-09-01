@@ -72,7 +72,7 @@ module.exports = function (Backend) {
           assert.ifError(err);
 
           var testService = services.filter(function (s) {
-            return parseInt(s.uuid.split('-'), 16) === 0x1666;
+            return parseInt(s.uuid.split('-')[0], 16) === 0x1666;
           })[0];
 
           assert(testService, 'Expected service with id 0x1666');
@@ -81,7 +81,7 @@ module.exports = function (Backend) {
             assert.ifError(err);
 
             var testCharacteristic = characteristics.filter(function (c) {
-              return parseInt(c.uuid.split('-'), 16) === 0x2666;
+              return parseInt(c.uuid.split('-')[0], 16) === 0x2666;
             })[0];
 
             assert(testCharacteristic, 'Expected characteristic with id 0x266');
@@ -102,7 +102,7 @@ module.exports = function (Backend) {
           assert.ifError(err);
 
           var testService = services.filter(function (s) {
-            return parseInt(s.uuid.split('-'), 16) === 0x1666;
+            return parseInt(s.uuid.split('-')[0], 16) === 0x1666;
           })[0];
 
           assert(testService, 'Expected service with id 0x1666');
@@ -111,7 +111,7 @@ module.exports = function (Backend) {
             assert.ifError(err);
 
             var testCharacteristic = characteristics.filter(function (c) {
-              return parseInt(c.uuid.split('-'), 16) === 0x2777;
+              return parseInt(c.uuid.split('-')[0], 16) === 0x2777;
             })[0];
 
             var testValue = Math.floor(Math.random() * 100);
