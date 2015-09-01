@@ -26,12 +26,13 @@
     "telehash": "^0.3.31"
   },
   "devDependencies": {
-    "browserify": "^10.2.6",
     "beefy": "^2.1.5",
     "bleno": "^0.1.14",
+    "browserify": "^10.2.6",
     "browserify-css": "^0.6.1",
     "cordova": "^5.1.1",
     "ejs": "^2.3.3",
-    "ios-deploy": "^1.7.0"
+    "ios-deploy": "^1.7.0",
+    "noble": "^1.1.0"
   }
 }
