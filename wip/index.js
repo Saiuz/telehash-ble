@@ -1,7 +1,11 @@
+// this was jer's original outline
+// could still be useful for reference
+// current implementation in telehash-ble-central
+
 var net = require('net');
 var os = require('os');
 var lob = require('lob-enc');
-var ble = require('./backend');
+var ble = require('./backend/base');
 
 exports.name = 'ble';
 exports.uuid = '42424242424242424242424242424242';
@@ -24,7 +28,7 @@ exports.mesh = function(mesh, cbExt)
       // TODO disable scan mode
       return;
     }
-    
+
   }
 
   mesh.beacon = function(args, cbDone)
@@ -37,7 +41,7 @@ exports.mesh = function(mesh, cbExt)
       // TODO disable beacon mode
       return;
     }
-    
+
   }
 
   // turn a path into a pipe
@@ -47,7 +51,7 @@ exports.mesh = function(mesh, cbExt)
     // TODO, add to per-link index of uuids+keys?
     cbPipe();
   };
-  
+
   function connect()
   {
     var pipe = new telehash.Pipe('ble',exports.keepalive);
@@ -72,4 +76,3 @@ exports.mesh = function(mesh, cbExt)
   cbExt(undefined, tp);
 
 }
-

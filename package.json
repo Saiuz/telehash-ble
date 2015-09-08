@@ -2,9 +2,10 @@
   "name": "telehash-ble",
   "version": "0.0.1",
   "description": "",
-  "main": "backend-chrome.js",
+  "main": "backends/noble.js",
   "scripts": {
     "start-dummy-peripheral": "node test/dummy-peripheral",
+    "start-telehash-peripheral": "node test/telehash-peripheral",
     "cordova-init": "cd test/cordova/test-cordova-app && cordova platform add ios && cordova platform add android && cordova prepare",
     "cordova-prepare": "cd test/cordova/test-cordova-app && cordova prepare",
     "start-cordova-test-server": "beefy test/cordova/cordova-tests.js:cordova-tests.js",

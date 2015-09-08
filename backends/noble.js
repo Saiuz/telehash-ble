@@ -1,4 +1,4 @@
-var Backend = require('./backend');
+var Base = require('./base');
 var noble = require('noble');
 var util = require('util');
 
@@ -7,7 +7,7 @@ function makeId(/* ...parts */) {
 }
 
 function NobleBackend() {
-  Backend.call(this);
+  Base.call(this);
   this._devicesByAddress = {};
   this._servicesById = {};
   this._characteristicsById = {};
@@ -37,7 +37,7 @@ function NobleBackend() {
 
 }
 
-util.inherits(NobleBackend, Backend);
+util.inherits(NobleBackend, Base);
 
 NobleBackend.prototype.type = 'NobleBackend';
 

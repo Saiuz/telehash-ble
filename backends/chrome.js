@@ -1,8 +1,8 @@
-var Backend = require('./backend');
+var Base = require('./base');
 var util = require('util');
 
 function ChromeBackend() {
-  Backend.call(this);
+  Base.call(this);
 
   var self = this;
 
@@ -11,7 +11,7 @@ function ChromeBackend() {
   });
 }
 
-util.inherits(ChromeBackend, Backend);
+util.inherits(ChromeBackend, Base);
 
 ChromeBackend.prototype.startDiscovery = function (callback) {
   chrome.bluetooth.startDiscovery(callback);

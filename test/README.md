@@ -2,6 +2,13 @@
 
 Tests for all platforms live here.
 
+## Telehash-ble tests
+
+See below for basic test setup, on top of all that, to run ble tests:
+
+* switch test/cordova/evothings-backend-test.js to use the test/shared/make-telehash-tests.js file
+* instead of dummy-peripheral, use telehash-peripheral
+
 
 ## Backend Integration Tests
 
@@ -61,13 +68,14 @@ The cordova tests are a little more complicated as it has to run in a real app. 
     1. Ensure you have android studio and/or xcode installed
     2. `npm install` if you haven't already
     3. `npm run cordova-init` to setup the cordova project
+    4. `npm run cordova-prepare` - if your desktop changes ip address, you'll need to re-run the cordova prepare step to update the ip address in the cordova template
 * Make sure these are running in different terminals before you run the tests
     1. `npm run start-dummy-peripheral` - starts a node server on your mac to test against
     2. `npm run start-cordova-test-server` - starts compiling test files and serving them (reloads automatically)
 * Now run the tests (ensure you have a ios/android device attached via usb)
     * `npm run test-ios`
     * `npm run test-android`
-* **or** if you want to run the tests manually:
+* **or** if you want to run the tests manually (this is what I've been doing as rebuilds are easier in xcode):
     * ios: open `./cordova/test-cordova-app/platforms/ios/telehash-ble-tests.xcodeproj` in xcode
     * android: open `./cordova/test-cordova-app/platforms/android` in android studio
 * To debug running tests:

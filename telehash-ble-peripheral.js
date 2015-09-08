@@ -1,10 +1,11 @@
+//
 var bleno = require('bleno');
 var lob = require('lob-enc');
 
 exports.name = 'ble';
 exports.uuid = '42424242424242424242424242424242';
 
-var StreamService = require('./stream-service');
+var StreamService = require('./lib/stream-service');
 var streamService = new StreamService();
 
 bleno.on('advertisingStart', function (err) {
@@ -97,4 +98,3 @@ exports.mesh = function (mesh, done) {
 
   done(null, tp);
 };
-

@@ -1,4 +1,4 @@
-var Backend = require('./backend');
+var Base = require('./base');
 var util = require('util');
 
 /*
@@ -20,7 +20,7 @@ function EvothingsBackend() {
     throw new Error('The telehash-ble evothings backend requires window.evothings to exist');
   }
 
-  Backend.call(this);
+  Base.call(this);
 
   this._devicesByAddress = {};
   this._connectStatuses = {};
@@ -40,7 +40,7 @@ function EvothingsBackend() {
   });
 }
 
-util.inherits(EvothingsBackend, Backend);
+util.inherits(EvothingsBackend, Base);
 
 EvothingsBackend.prototype.type = 'EvothingsBackend'
 
@@ -126,7 +126,7 @@ EvothingsBackend.prototype.disconnect = function (deviceAddress, callback) {
     if (err) {
       return callback(err);
     }
-    
+
     self.ble.close(deviceHandle);
     callback();
   });

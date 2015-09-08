@@ -14,7 +14,7 @@ The args may be `false` to disable or `{uuid:'...',name:'...'}` to set the custo
 
 ## Backends
 
-Backends should be implemented to conform to the interface defined in ./backend.js, which is roughly based on the chrome app bluetooth/bluetoothLowEnergy apis.
+Backends should be implemented to conform to the interface defined in ./backends/base.js, which is roughly based on the chrome app bluetooth/bluetoothLowEnergy apis.
 
 Some will require peer dependencies to be installed (e.g. noble).
 
@@ -38,3 +38,7 @@ Some will require peer dependencies to be installed (e.g. noble).
 ## Tests
 
 Read [./test/README.md](./test/README.md) for instructions on setting up tests on node/cordova.
+
+## package.json scripts
+
+

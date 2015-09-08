@@ -28,7 +28,7 @@ Backend.prototype.stopDiscovery = function (callback) {
 
 
 /** Connect to a remote device.
- * @param {string} address - 
+ * @param {string} address -
  * @param {Object} options - connection options
  * @param {boolean} options.persistent - disconnect on app close?
  * @param {function} callback - callback(err)

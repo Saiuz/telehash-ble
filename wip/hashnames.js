@@ -1,3 +1,11 @@
+/*  Proof of concept hashname generation
+
+    This is just a demo of using chacha20 and hashname to generate hashnames
+    as per the spec defined in the readme
+
+*/
+
+
 var crypto = require('crypto');
 var chacha = require('chacha20');
 var hashname = require('hashname');

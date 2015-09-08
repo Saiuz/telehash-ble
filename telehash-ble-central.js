@@ -1,13 +1,35 @@
+// This is an initial attempt at a telehash extension to
+// stream data over a ble transport
+//
+// The counterpart for running on a peripheal is found in
+// ./telehash-ble-peripheral.js (note that's only been implemented for node)
+//
+// Needs to be passed an instantiated backend
+// e.g.:
+//
+//     var NobleBackend = require('./backends/noble');
+//     var telehash = require('telehash');
+//     var telehashBle = require('.');
+//
+//     var backend = new NobleBackend();
+//     telehash.add(telehashBle(backend));
+//
+//     //...
+
 var CHUNK_SIZE = 20;
 var TELEHASH_UUID = '42424242424242424242424242424242';
 var lob = require('lob-enc');
 
+// must
 module.exports = function (backend) {
   var ext = {};
 
   ext.name = 'ble-central';
+
+  // not sure what this does, came from jer's suggestion
   ext.keepalive = 5 * 1000;
 
+  //
   ext.mesh = function (mesh, done) {
     var tp = {
       pipes: {}
@@ -60,22 +82,10 @@ module.exports = function (backend) {
 
       var characteristicId = null;
       var send = function (data, done) {
-        //if (blocked) {
-        //  console.log('Error: blocked');
-        //  return done(new Error('Sending blocked'));
-        //}
-
-        //blocked = true;
-
-        var onComplete = function () {
-          blocked = false;
-          done.apply(null, arguments);
-        };
-
         var queueSend = function queueSend() {
           var val = chunk.read(CHUNK_SIZE) || chunk.read();
           if (!val) {
-            onComplete();
+            done();
           } else {
             console.log('Write value');
             backend.writeCharacteristicValue(characteristicId, val, function (err) {
@@ -162,8 +172,10 @@ module.exports = function (backend) {
           } else {
             console.log('Creating link to ' + device.address);
             var link = require('./peripheral.json');
+
             link.paths[0].address = device.address;
             link.paths[0].service = telehashService.instanceId;
+
             mesh.link(link, function (err, link) {
               if (err) {
                 return console.log('Err linking to ' + device.address + ' ' + err);
@@ -173,16 +185,13 @@ module.exports = function (backend) {
               console.log('And, end');
               console.log('Pinging link');
 
-              window.doPing = function () {
-                link.ping(function (err, ping) {
-                  if (err) {
-                    console.log('Error pingling', err);
-                  } else {
-                    console.log('LATENCY: ' + ping);
-                  }
-                });
-              }
-              window.doPing();
+              link.ping(function (err, ping) {
+                if (err) {
+                  console.log('Error pinging', err);
+                } else {
+                  console.log('LATENCY: ' + ping);
+                }
+              });
             });
 
           }
@@ -192,7 +201,9 @@ module.exports = function (backend) {
 
     mesh.scan = function (args) {
       if (arguments.length === 1 && !args) {
-        backend.stopDiscovery(console.log.bind(console, 'stopDiscovery'));
+        backend.stopDiscovery(function () {
+          console.log('stopDiscovery');
+        });
       } else {
         backend.startDiscovery(function (err) {
           if (err) {
